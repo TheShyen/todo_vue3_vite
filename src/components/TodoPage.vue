@@ -1,16 +1,16 @@
 <script setup>
 import { date } from 'quasar';
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import TodoList from './TodoList.vue';
 import { useQuasar } from 'quasar';
+import LeftModalWindow from './LeftModalWindow.vue';
+import TaskInfo from './TaskInfo.vue';
 
-const $q = useQuasar();
-
-const leftDrawerOpen = ref(false);
-const rightDrawerOpen = ref(false);
 const taskInput = ref('');
+const rightDrawerOpen = ref(false);
 const drawerTaskInput = ref('');
 const updatedDrawerTaskInput = ref('');
+
 const tasks = ref([
   {
     title: 'Get keyboard',
@@ -53,35 +53,19 @@ function deleteTask(task) {
   tasks.value = tasks.value.filter((item) => item !== task);
 }
 
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value;
-}
-
-function openRightDrawer(task) {
+async function openRightDrawer(task) {
   rightDrawerOpen.value = true;
+  await nextTick();
   drawerTaskInput.value = task.title;
   updatedDrawerTaskInput.value = task;
+  await nextTick();
 }
-function closeRightDrawer() {
-  rightDrawerOpen.value = false;
+function updateRightDrawer(newValue) {
+  rightDrawerOpen.value = newValue;
 }
-function customBtn() {
-  $q.dialog({
-    title: 'Confirm',
-    message: 'Удалить задачу?',
-    noEscDismiss: false,
 
-    ok: {
-      push: true,
-      color: 'negative'
-    },
-    cancel: {
-      push: true
-    }
-  }).onOk(() => {
-    tasks.value = tasks.value.filter((e) => e !== updatedDrawerTaskInput.value);
-    closeRightDrawer();
-  });
+function updateRightDrawerInput(newValue) {
+  updatedDrawerTaskInput.value.title = newValue;
 }
 </script>
 <template>
@@ -93,68 +77,15 @@ function customBtn() {
       </div>
       <q-img class="header-image absolute-top" src="../statics/mountains.jpg" />
     </q-header>
-
-    <q-drawer
-      v-model="leftDrawerOpen"
-      :width="350"
-      bordered
-      class="bg-grey-3 column"
-      show-if-above
-      side="left"
-    >
-      <q-input
-        class="search text-h6"
-        label="Search"
-        standout="bg-teal-3 text-white"
-      >
-        <template v-slot:append>
-          <q-icon name="search" />
-        </template>
-      </q-input>
-      <q-btn
-        flat
-        icon="add"
-        outlined
-        size="15px"
-        class="q-pa-md text-h6 fixed-bottom q-mb-md"
-        >Создать список</q-btn
-      >
-    </q-drawer>
-    <q-drawer
-      v-model="rightDrawerOpen"
-      :width="400"
-      bordered
-      class="column"
-      side="right"
-    >
-      <q-btn
-        class="q-ma-md self-end"
-        color="primary"
-        flat
-        icon="close"
-        square
-        @click="closeRightDrawer"
-      />
-      <q-input
-        v-model="drawerTaskInput"
-        class="q-ma-md q-mt-md text-h5"
-        @keyup.enter="updatedDrawerTaskInput.title = drawerTaskInput"
-        outlined
-      />
-      <q-input
-        class="q-ma-md q-mt-xs text-h6"
-        label="Добавить описание"
-        outlined
-      />
-
-      <q-btn
-        class="q-ma-md q-mt-xs self-start"
-        icon="delete"
-        label="delete"
-        @click="customBtn"
-      />
-    </q-drawer>
-
+    <LeftModalWindow />
+    <TaskInfo
+      :rightDrawerOpen="rightDrawerOpen"
+      :tasks="tasks"
+      :drawerTaskInput="drawerTaskInput"
+      :updatedDrawerTaskInput="updatedDrawerTaskInput"
+      @update:right-drawer-open="updateRightDrawer"
+      @update:drawer-task-input="updateRightDrawerInput"
+    />
     <q-page-container class="column">
       <TodoList :tasks="tasks" @open-right-dialog="openRightDrawer" />
       <q-input
@@ -191,8 +122,5 @@ function customBtn() {
 
 .search {
   padding: 10px 10px;
-}
-
-.input__add-task {
 }
 </style>

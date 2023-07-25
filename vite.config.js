@@ -13,5 +13,8 @@ export default defineConfig({
       sassVariables: 'src/quasar-variables.sass'
     })
   ],
-  base: '/todo-vue-vite/'
+  base: '/todo_vue3_vite/',
+  build: {
+    outDir: 'dist'
+  }
 });

@@ -7,7 +7,11 @@ const props = defineProps([
   'updatedDrawerTaskInput',
   'drawerTaskInput'
 ]);
-const emit = defineEmits(['update:rightDrawerOpen', 'update:drawerTaskInput']);
+const emit = defineEmits([
+  'update:rightDrawerOpen',
+  'update:drawerTaskInput',
+  'tasksChange'
+]);
 const $q = useQuasar();
 const isModalVisible = toRef(props, 'rightDrawerOpen');
 const titleInput = ref(props.drawerTaskInput);
@@ -38,9 +42,8 @@ function customBtn() {
       push: true
     }
   }).onOk(() => {
-    props.tasks.value = props.tasks.value.filter(
-      (e) => e !== props.updatedDrawerTaskInput
-    );
+    emit('tasksChange');
+
     closeRightDrawer();
   });
 }
@@ -75,8 +78,9 @@ function customBtn() {
 
     <q-btn
       class="q-ma-md q-mt-xs self-start"
+      color="brown-5"
       icon="delete"
-      label="delete"
+      label="Удалить"
       @click="customBtn"
     />
   </q-drawer>

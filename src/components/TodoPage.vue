@@ -2,7 +2,7 @@
 import { date } from 'quasar';
 import { computed, nextTick, onMounted, ref } from 'vue';
 import TodoList from './TodoList.vue';
-import { useQuasar } from 'quasar';
+
 import LeftModalWindow from './LeftModalWindow.vue';
 import TaskInfo from './TaskInfo.vue';
 
@@ -53,12 +53,10 @@ function deleteTask(task) {
   tasks.value = tasks.value.filter((item) => item !== task);
 }
 
-async function openRightDrawer(task) {
+function openRightDrawer(task) {
   rightDrawerOpen.value = true;
-  await nextTick();
   drawerTaskInput.value = task.title;
   updatedDrawerTaskInput.value = task;
-  await nextTick();
 }
 function updateRightDrawer(newValue) {
   rightDrawerOpen.value = newValue;
@@ -67,9 +65,16 @@ function updateRightDrawer(newValue) {
 function updateRightDrawerInput(newValue) {
   updatedDrawerTaskInput.value.title = newValue;
 }
+function updateTasks() {
+  tasks.value = tasks.value.filter((e) => e !== updatedDrawerTaskInput.value);
+}
 </script>
 <template>
-  <q-layout class="bg-grey-2" view="lHr lpR fFf">
+  <q-layout
+    @keyup.esc="rightDrawerOpen = false"
+    class="bg-grey-2"
+    view="lHr lpR fFf"
+  >
     <q-header bordered class="header bg-primary text-white" elevated>
       <div class="q-px-lg q-pt-xl q-mb-md q-mt-xl">
         <div class="text-h3">TODO</div>
@@ -85,6 +90,7 @@ function updateRightDrawerInput(newValue) {
       :updatedDrawerTaskInput="updatedDrawerTaskInput"
       @update:right-drawer-open="updateRightDrawer"
       @update:drawer-task-input="updateRightDrawerInput"
+      @tasks-change="updateTasks"
     />
     <q-page-container class="column">
       <TodoList :tasks="tasks" @open-right-dialog="openRightDrawer" />
@@ -118,9 +124,5 @@ function updateRightDrawerInput(newValue) {
   height: 100%;
   z-index: -1;
   opacity: 0.8;
-}
-
-.search {
-  padding: 10px 10px;
 }
 </style>

@@ -2,7 +2,7 @@
 
 <template>
   <q-drawer
-    :width="350"
+    :width="280"
     bordered
     class="bg-grey-3 column"
     show-if-above

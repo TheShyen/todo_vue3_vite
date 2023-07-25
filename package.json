@@ -2,6 +2,7 @@
   "name": "todo_vue3_vite",
   "version": "0.0.0",
   "private": true,
+  "homepage": "https://theshyen.github.io/vue-vite-todo/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

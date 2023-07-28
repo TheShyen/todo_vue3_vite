@@ -1,6 +1,6 @@
 <script setup>
 import { date } from 'quasar';
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import TodoList from './TodoList.vue';
 
 import LeftModalWindow from './LeftModalWindow.vue';
@@ -11,26 +11,11 @@ const rightDrawerOpen = ref(false);
 const drawerTaskInput = ref('');
 const updatedDrawerTaskInput = ref('');
 
-const tasks = ref([
-  {
-    title: 'Get keyboard',
-    done: false,
-    id: 1
-  },
-  {
-    title: 'Just coding',
-    done: false,
-    id: 2
-  },
-  {
-    title: 'sleep',
-    done: false,
-    id: 3
-  }
-]);
+const tasks = ref([]);
 const input = ref(null);
 onMounted(() => {
   input.value.focus();
+  tasks.value = JSON.parse(localStorage.getItem('tasks'));
 });
 const formatData = computed(() => {
   const timeStamp = Date.now();
@@ -41,11 +26,13 @@ function addTask() {
   if (!taskInput.value.length) {
     return;
   }
+
   tasks.value.push({
     title: taskInput.value,
     id: Date.now(),
     done: false
   });
+  localStorage.setItem('tasks', JSON.stringify(tasks.value));
   taskInput.value = '';
 }
 
@@ -67,13 +54,14 @@ function updateRightDrawerInput(newValue) {
 }
 function updateTasks() {
   tasks.value = tasks.value.filter((e) => e !== updatedDrawerTaskInput.value);
+  localStorage.setItem('tasks', JSON.stringify(tasks.value));
 }
 </script>
 <template>
   <q-layout
     @keyup.esc="rightDrawerOpen = false"
     class="bg-grey-2"
-    view="lHr lpR fFf"
+    view="LHr lpR lFr"
   >
     <q-header bordered class="header bg-primary text-white" elevated>
       <div class="q-px-lg q-pt-xl q-mb-md q-mt-xl">
@@ -94,11 +82,13 @@ function updateTasks() {
     />
     <q-page-container class="column">
       <TodoList :tasks="tasks" @open-right-dialog="openRightDrawer" />
+    </q-page-container>
+    <q-footer class="bg-grey-2">
       <q-input
         ref="input"
         v-model="taskInput"
         bg-color="white"
-        class="text-h6 q-ma-lg"
+        class="text-h6 q-ma-md"
         outlined
         placeholder="Add task"
         @keyup.enter="addTask"
@@ -115,7 +105,7 @@ function updateTasks() {
           />
         </template>
       </q-input>
-    </q-page-container>
+    </q-footer>
   </q-layout>
 </template>
 

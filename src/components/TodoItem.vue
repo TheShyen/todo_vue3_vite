@@ -1,7 +1,7 @@
 <script setup>
 defineProps(['task']);
 </script>
-<template>
+<template style="margin-top: 100px">
   <q-item :key="task.id" v-ripple :class="{ 'done bg-blue-1': task.done }">
     <q-item-section avatar>
       <q-btn

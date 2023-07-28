@@ -3,7 +3,6 @@ import { onMounted, onUpdated, ref, toRef } from 'vue';
 import { useQuasar } from 'quasar';
 const props = defineProps([
   'rightDrawerOpen',
-  'tasks',
   'updatedDrawerTaskInput',
   'drawerTaskInput'
 ]);
@@ -15,6 +14,7 @@ const emit = defineEmits([
 const $q = useQuasar();
 const isModalVisible = toRef(props, 'rightDrawerOpen');
 const titleInput = ref(props.drawerTaskInput);
+const currentTask = toRef(props, 'updatedDrawerTaskInput');
 
 onUpdated(() => {
   titleInput.value = props.drawerTaskInput;
@@ -26,7 +26,6 @@ function closeRightDrawer() {
 function updateDrawerTaskInput(event) {
   emit('update:drawerTaskInput', titleInput.value);
   event.target.blur();
-  // props.updatedDrawerTaskInput.title = props.drawerTaskInput;
 }
 function customBtn() {
   $q.dialog({
@@ -66,10 +65,27 @@ function customBtn() {
     />
     <q-input
       v-model="titleInput"
+      :class="{ 'done bg-blue-1': currentTask.done }"
       class="q-ma-md q-mt-md text-h5"
       @keyup.enter="updateDrawerTaskInput($event)"
       outlined
-    />
+    >
+      <template v-slot:prepend>
+        <q-btn
+          color="primary"
+          dense
+          flat
+          round
+          @click.stop="currentTask.done = !currentTask.done"
+        >
+          <q-checkbox
+            v-model="currentTask.done"
+            class="no-pointer-events"
+            color="teal"
+          />
+        </q-btn>
+      </template>
+    </q-input>
     <q-input
       class="q-ma-md q-mt-xs text-h6"
       label="Добавить описание"
@@ -86,4 +102,9 @@ function customBtn() {
   </q-drawer>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.done {
+  text-decoration: line-through;
+  color: #5d4242;
+}
+</style>

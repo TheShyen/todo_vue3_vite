@@ -7,12 +7,9 @@
     class="bg-grey-3 column"
     show-if-above
     side="left"
+    :breakpoint="500"
   >
-    <q-input
-      class="search text-h6"
-      label="Search"
-      standout="bg-teal-3 text-white"
-    >
+    <q-input class="text-h6" label="Search" standout="bg-teal-3 text-white">
       <template v-slot:append>
         <q-icon name="search" />
       </template>

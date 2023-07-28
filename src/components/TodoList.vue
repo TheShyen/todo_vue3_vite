@@ -1,13 +1,9 @@
 <template>
   <q-page :style-fn="myTweak">
-    <q-list
-      v-for="(task, index) in tasks"
-      bordered
-      class="bg-white q-ma-md"
-      separator
-      @open-right-dialog="$emit('open-right-dialog', task)"
-    >
+    <div v-if="!tasks.length">EGC</div>
+    <q-list bordered class="bg-white q-ma-md" separator>
       <TodoItem
+        v-for="(task, index) in tasks"
         :key="task.id"
         :task="task"
         @open-right-dialog="$emit('open-right-dialog', task)"

@@ -23,6 +23,9 @@ function completeTask() {
     <q-item-section @click="emit('open-right-dialog', task)">
       <q-item-label class="text-subtitle1">{{ task.title }}</q-item-label>
     </q-item-section>
+    <q-item-label class="q-mt-xs text-grey-7" v-if="task.description"
+      ><q-icon name="note" /> Заметка</q-item-label
+    >
   </q-item>
 </template>
 

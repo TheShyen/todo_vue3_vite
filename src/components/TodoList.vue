@@ -13,7 +13,7 @@ function myTweak(offset) {
 
 <template>
   <q-page :style-fn="myTweak">
-    <div v-if="!tasks?.length">EGC</div>
+    <div v-if="!tasks?.length && !completeTasks?.length">EGC</div>
     <q-list v-if="tasks?.length" bordered class="bg-white q-ma-md" separator>
       <TodoItem
         v-for="task in tasks"
@@ -23,15 +23,15 @@ function myTweak(offset) {
         @complete-task="emit('complete-task', task)"
       />
     </q-list>
-    <q-btn
+    <q-btn-dropdown
       v-if="completeTasks?.length"
-      class="q-ml-md"
+      class="q-ml-md q-mt-md"
       color="primary"
       no-caps
       @click="showCompleteTasks = !showCompleteTasks"
+      label="Завершенные"
     >
-      Завершенные {{ completeTasks.length }}
-    </q-btn>
+    </q-btn-dropdown>
     <template v-if="completeTasks?.length">
       <q-list
         v-if="showCompleteTasks"

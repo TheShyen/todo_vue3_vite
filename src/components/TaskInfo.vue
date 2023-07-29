@@ -1,30 +1,33 @@
 <script setup>
-import { onMounted, onUpdated, ref, toRef } from 'vue';
-import { useQuasar } from 'quasar';
+import { onUpdated, ref, toRef } from 'vue';
+import { date, useQuasar } from 'quasar';
 const props = defineProps([
-  'rightDrawerOpen',
+  'rightModalOpen',
   'updatedDrawerTaskInput',
-  'drawerTaskInput'
+  'modalDescriptionInput',
+  'modalTaskInput'
 ]);
 const emit = defineEmits([
-  'update:rightDrawerOpen',
-  'update:drawerTaskInput',
+  'update:rightModalOpen',
+  'update:modalTaskInput',
   'tasksChange'
 ]);
 const $q = useQuasar();
-const isModalVisible = toRef(props, 'rightDrawerOpen');
-const titleInput = ref(props.drawerTaskInput);
+const isModalVisible = toRef(props, 'rightModalOpen');
+const titleInput = ref(props.modalTaskInput);
 const currentTask = toRef(props, 'updatedDrawerTaskInput');
+const descriptionInput = ref(props.modalDescriptionInput);
 
 onUpdated(() => {
-  titleInput.value = props.drawerTaskInput;
+  titleInput.value = props.modalTaskInput;
+  descriptionInput.value = props.modalDescriptionInput;
 });
 
 function closeRightDrawer() {
-  emit('update:rightDrawerOpen', false);
+  emit('update:rightModalOpen', false);
 }
 function updateDrawerTaskInput(event) {
-  emit('update:drawerTaskInput', titleInput.value);
+  emit('update:modalTaskInput', titleInput.value, descriptionInput.value);
   event.target.blur();
 }
 function customBtn() {
@@ -87,10 +90,13 @@ function customBtn() {
       </template>
     </q-input>
     <q-input
+      v-model="descriptionInput"
       class="q-ma-md q-mt-xs text-h6"
-      label="Добавить описание"
+      placeholder="Добавить описание"
       outlined
-    />
+      @keyup.enter="updateDrawerTaskInput($event)"
+    >
+    </q-input>
 
     <q-btn
       class="q-ma-md q-mt-xs self-start"

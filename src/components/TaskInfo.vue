@@ -105,6 +105,6 @@ function customBtn() {
 <style lang="scss" scoped>
 .done {
   text-decoration: line-through;
-  color: #5d4242;
+  color: #624949;
 }
 </style>

@@ -1,13 +1,9 @@
 <script setup>
-import {ref} from "vue";
-import TodoPage from "./components/TodoPage.vue";
- const text = ref('')
+import TodoPage from './components/TodoPage.vue';
 </script>
 
 <template>
-  <TodoPage/>
+  <TodoPage />
 </template>
 
-<style>
-
-</style>
+<style></style>

@@ -1,6 +1,6 @@
 <script setup>
 import { date } from 'quasar';
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUpdated, reactive, ref } from 'vue';
 import TodoList from './TodoList.vue';
 
 import LeftModalWindow from './LeftModalWindow.vue';
@@ -12,10 +12,12 @@ const drawerTaskInput = ref('');
 const updatedDrawerTaskInput = ref('');
 
 const tasks = ref([]);
+const completedTasks = ref([]);
 const input = ref(null);
 onMounted(() => {
   input.value.focus();
   tasks.value = JSON.parse(localStorage.getItem('tasks'));
+  completedTasks.value = JSON.parse(localStorage.getItem('completeTasks'));
 });
 const formatData = computed(() => {
   const timeStamp = Date.now();
@@ -26,7 +28,7 @@ function addTask() {
   if (!taskInput.value.length) {
     return;
   }
-
+  tasks.value = tasks.value || [];
   tasks.value.push({
     title: taskInput.value,
     id: Date.now(),
@@ -34,10 +36,6 @@ function addTask() {
   });
   localStorage.setItem('tasks', JSON.stringify(tasks.value));
   taskInput.value = '';
-}
-
-function deleteTask(task) {
-  tasks.value = tasks.value.filter((item) => item !== task);
 }
 
 function openRightDrawer(task) {
@@ -52,9 +50,31 @@ function updateRightDrawer(newValue) {
 function updateRightDrawerInput(newValue) {
   updatedDrawerTaskInput.value.title = newValue;
 }
-function updateTasks() {
+function updateTasks(el) {
+  tasks.value = tasks.value.filter((e) => e !== el);
+  if (el.done === false) {
+    tasks.value.push(el);
+  }
+}
+
+function deleteTask() {
   tasks.value = tasks.value.filter((e) => e !== updatedDrawerTaskInput.value);
+  completedTasks.value = completedTasks.value.filter(
+    (e) => e !== updatedDrawerTaskInput.value
+  );
+
+  localStorage.setItem('completeTasks', JSON.stringify(completedTasks.value));
   localStorage.setItem('tasks', JSON.stringify(tasks.value));
+}
+function updateCompletedTasks(newValue) {
+  completedTasks.value = completedTasks.value || [];
+
+  completedTasks.value.push(newValue);
+
+  completedTasks.value = completedTasks.value.filter((e) => e.done === true);
+
+  updateTasks(newValue);
+  localStorage.setItem('completeTasks', JSON.stringify(completedTasks.value));
 }
 </script>
 <template>
@@ -78,10 +98,15 @@ function updateTasks() {
       :updatedDrawerTaskInput="updatedDrawerTaskInput"
       @update:right-drawer-open="updateRightDrawer"
       @update:drawer-task-input="updateRightDrawerInput"
-      @tasks-change="updateTasks"
+      @tasks-change="deleteTask"
     />
     <q-page-container class="column">
-      <TodoList :tasks="tasks" @open-right-dialog="openRightDrawer" />
+      <TodoList
+        :tasks="tasks"
+        :completeTasks="completedTasks"
+        @open-right-dialog="openRightDrawer"
+        @complete-task="updateCompletedTasks"
+      />
     </q-page-container>
     <q-footer class="bg-grey-2">
       <q-input

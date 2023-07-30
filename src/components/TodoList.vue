@@ -3,7 +3,7 @@ import TodoItem from './TodoItem.vue';
 import { ref } from 'vue';
 
 defineProps(['tasks', 'completeTasks']);
-const emit = defineEmits(['complete-task', 'open-right-dialog']);
+const emit = defineEmits(['completeTask', 'openRightDialog', 'deleteTask']);
 const showCompleteTasks = ref(true);
 
 function myTweak(offset) {
@@ -19,8 +19,9 @@ function myTweak(offset) {
         v-for="task in tasks"
         :key="task.id"
         :task="task"
-        @open-right-dialog="$emit('open-right-dialog', task)"
-        @complete-task="emit('complete-task', task)"
+        @open-right-dialog="emit('openRightDialog', task)"
+        @complete-task="emit('completeTask', task)"
+        @delete-task="emit('deleteTask', task)"
       />
     </q-list>
     <q-btn-dropdown

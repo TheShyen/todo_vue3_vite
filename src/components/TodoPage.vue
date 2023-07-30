@@ -49,7 +49,8 @@ function updateTasks(el) {
   localStorage.setItem('tasks', JSON.stringify(tasks.value));
 }
 
-function deleteTask() {
+function deleteTask(task) {
+  tasks.value = tasks.value.filter((e) => e !== task);
   tasks.value = tasks.value.filter((e) => e !== updatedDrawerTaskInput.value);
   localStorage.setItem('tasks', JSON.stringify(tasks.value));
   completedTasks.value = completedTasks.value.filter(
@@ -93,6 +94,7 @@ function updateCompletedTasks(newValue) {
         :completeTasks="completedTasks"
         @open-right-dialog="openRightDrawer"
         @complete-task="updateCompletedTasks"
+        @delete-task="deleteTask"
       />
     </q-page-container>
     <AddTask @create-task="addTask" />

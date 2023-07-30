@@ -30,7 +30,7 @@ function updateDrawerTaskInput(event) {
   emit('update:modalTaskInput', titleInput.value, descriptionInput.value);
   event.target.blur();
 }
-function customBtn() {
+function showDialogModal() {
   $q.dialog({
     title: 'Confirm',
     message: 'Удалить задачу?',
@@ -103,7 +103,7 @@ function customBtn() {
       color="brown-5"
       icon="delete"
       label="Удалить"
-      @click="customBtn"
+      @click="showDialogModal"
     />
   </q-drawer>
 </template>

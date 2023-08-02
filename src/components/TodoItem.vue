@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 
 const props = defineProps(['task']);
-const emit = defineEmits(['completeTask', 'open-right-dialog', 'deleteTask']);
+const emit = defineEmits(['complete-task', 'open-right-dialog', 'delete-task']);
 const task = ref(props.task);
 const showContextMenu = ref(false);
 function completeTask() {
@@ -16,7 +16,7 @@ function deleteTask() {
 <template>
   <q-item :key="task.id" v-ripple :class="{ 'done bg-blue-1': task.done }">
     <q-item-section avatar>
-      <q-btn color="primary" dense flat round @click.stop="completeTask">
+      <q-btn color="primary" dense flat round @click="completeTask">
         <q-checkbox
           v-model="task.done"
           class="no-pointer-events"
@@ -31,29 +31,31 @@ function deleteTask() {
       <q-popup-proxy context-menu class="column">
         <q-menu v-model="showContextMenu">
           <q-item clickable class="flex-center">
-            <q-icon name="delete" />
-            <q-item-section @click="deleteTask">Удалить</q-item-section>
+            <q-icon name="delete" color="red" />
+            <q-item-section class="q-ml-xs" @click="deleteTask"
+              >Удалить</q-item-section
+            >
           </q-item>
-          <q-item clickable class="flex-center">
-            <q-icon name="done" />
-            <q-item-section @click="deleteTask"
+          <q-item v-show="!task.done" clickable class="flex-center">
+            <q-icon name="done" color="green" />
+            <q-item-section @click="completeTask" class="q-ml-xs"
               >Пометить как завершенное</q-item-section
             ></q-item
           >
+          <q-item v-show="task.done" clickable class="flex-center">
+            <q-icon name="done" color="green" />
+            <q-item-section @click="completeTask" class="q-ml-xs"
+              >Пометить как незавершенное</q-item-section
+            ></q-item
+          >
         </q-menu>
-
-        <!--        <q-btn-->
-        <!--          class="q-ml-md q-mr-md q-mb-md"-->
-        <!--          color="brown-5"-->
-        <!--          icon="done"-->
-        <!--          no-caps-->
-        <!--          label="Пометить как завершенное"-->
-        <!--          @click="showDialogModal"-->
-        <!--        />-->
       </q-popup-proxy>
       <q-item-label class="text-subtitle1">{{ task.title }}</q-item-label>
     </q-item-section>
-    <q-item-label class="q-mt-xs text-grey-7" v-if="task.description"
+    <q-item-label
+      class="q-mt-xs text-grey-7"
+      style="text-decoration: none"
+      v-if="task.description"
       ><q-icon name="note" /> Заметка</q-item-label
     >
   </q-item>

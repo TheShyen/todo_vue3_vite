@@ -3,7 +3,7 @@ import TodoItem from './TodoItem.vue';
 import { ref } from 'vue';
 
 defineProps(['tasks', 'completeTasks']);
-const emit = defineEmits(['completeTask', 'openRightDialog', 'deleteTask']);
+const emit = defineEmits(['complete-task', 'open-right-dialog', 'delete-task']);
 const showCompleteTasks = ref(true);
 
 function myTweak(offset) {
@@ -12,16 +12,21 @@ function myTweak(offset) {
 </script>
 
 <template>
-  <q-page :style-fn="myTweak">
-    <div v-if="!tasks?.length && !completeTasks?.length">EGC</div>
+  <q-page :style-fn="myTweak" class="page">
+    <div
+      v-if="!tasks?.length && !completeTasks?.length"
+      class="plug text-h4 text-blue-grey q-mt-xl"
+    >
+      Добавьте новую задачу!
+    </div>
     <q-list v-if="tasks?.length" bordered class="bg-white q-ma-md" separator>
       <TodoItem
         v-for="task in tasks"
         :key="task.id"
         :task="task"
-        @open-right-dialog="emit('openRightDialog', task)"
-        @complete-task="emit('completeTask', task)"
-        @delete-task="emit('deleteTask', task)"
+        @open-right-dialog="emit('open-right-dialog', task)"
+        @complete-task="emit('complete-task', task)"
+        @delete-task="emit('delete-task', task)"
       />
     </q-list>
     <q-btn-dropdown
@@ -58,5 +63,10 @@ function myTweak(offset) {
     text-decoration: line-through;
     color: #bbb;
   }
+}
+
+.plug {
+  display: flex;
+  justify-content: center;
 }
 </style>

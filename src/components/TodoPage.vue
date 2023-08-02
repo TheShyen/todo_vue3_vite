@@ -87,11 +87,12 @@ function updateCompletedTasks(newValue) {
       @update:right-modal-open="updateRightDrawer"
       @update:modal-task-input="updateRightDrawerInput"
       @tasks-change="deleteTask"
+      @change-task-state="updateCompletedTasks"
     />
     <q-page-container class="column">
       <TodoList
         :tasks="tasks"
-        :completeTasks="completedTasks"
+        :complete-tasks="completedTasks"
         @open-right-dialog="openRightDrawer"
         @complete-task="updateCompletedTasks"
         @delete-task="deleteTask"

@@ -1,6 +1,6 @@
 <script setup>
-import { onUpdated, ref, toRef } from 'vue';
-import { date, useQuasar } from 'quasar';
+import { ref, toRef, watchEffect } from 'vue';
+import { useQuasar } from 'quasar';
 const props = defineProps([
   'rightModalOpen',
   'updatedDrawerTaskInput',
@@ -10,25 +10,28 @@ const props = defineProps([
 const emit = defineEmits([
   'update:rightModalOpen',
   'update:modalTaskInput',
-  'tasksChange'
+  'tasksChange',
+  'changeTaskState'
 ]);
 const $q = useQuasar();
 const isModalVisible = toRef(props, 'rightModalOpen');
 const titleInput = ref(props.modalTaskInput);
 const currentTask = toRef(props, 'updatedDrawerTaskInput');
 const descriptionInput = ref(props.modalDescriptionInput);
-
-onUpdated(() => {
+watchEffect(() => {
   titleInput.value = props.modalTaskInput;
   descriptionInput.value = props.modalDescriptionInput;
 });
-
 function closeRightDrawer() {
   emit('update:rightModalOpen', false);
 }
 function updateDrawerTaskInput(event) {
   emit('update:modalTaskInput', titleInput.value, descriptionInput.value);
   event.target.blur();
+}
+function changeTaskState() {
+  currentTask.value.done = !currentTask.value.done;
+  emit('changeTaskState', currentTask.value);
 }
 function showDialogModal() {
   $q.dialog({
@@ -74,13 +77,7 @@ function showDialogModal() {
       outlined
     >
       <template v-slot:prepend>
-        <q-btn
-          color="primary"
-          dense
-          flat
-          round
-          @click.stop="currentTask.done = !currentTask.done"
-        >
+        <q-btn color="primary" dense flat round @click.stop="changeTaskState">
           <q-checkbox
             v-model="currentTask.done"
             class="no-pointer-events"
@@ -92,6 +89,7 @@ function showDialogModal() {
     <q-input
       v-model="descriptionInput"
       class="q-ma-md q-mt-xs text-h6"
+      type="textarea"
       placeholder="Добавить описание"
       outlined
       @keyup.enter="updateDrawerTaskInput($event)"

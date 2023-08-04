@@ -1,104 +1,104 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch, watchEffect } from 'vue';
 import TodoList from './TodoList.vue';
 import AddTask from './AddTask.vue';
 import LeftModalWindow from './LeftModalWindow.vue';
 import TaskInfo from './TaskInfo.vue';
 import Header from './Header.vue';
 
-const rightModalOpen = ref(false);
+const isRightModalOpen = ref(false);
 const modalTaskInput = ref('');
 const modalDescriptionInput = ref('');
 
-const updatedDrawerTaskInput = ref('');
+const selectedTask = ref('');
 
 const tasks = ref([]);
-const completedTasks = ref([]);
+const completeTasks = ref([]);
+watch(
+  tasks,
+  (newTasks) => {
+    localStorage.setItem('tasks', JSON.stringify(newTasks));
+  },
+  { deep: true }
+);
+watch(
+  completeTasks,
+  (newTasks) => {
+    localStorage.setItem('completeTasks', JSON.stringify(newTasks));
+  },
+  { deep: true }
+);
 
 onMounted(() => {
-  tasks.value = JSON.parse(localStorage.getItem('tasks'));
-  completedTasks.value = JSON.parse(localStorage.getItem('completeTasks'));
+  tasks.value = JSON.parse(localStorage.getItem('tasks')) || [];
+  completeTasks.value = JSON.parse(localStorage.getItem('completeTasks')) || [];
 });
 
-function addTask(newTask) {
-  tasks.value = tasks.value || [];
+function onCreateTask(newTask) {
   tasks.value.push(newTask);
-  localStorage.setItem('tasks', JSON.stringify(tasks.value));
 }
 
-function openRightDrawer(task) {
-  rightModalOpen.value = true;
+function onOpenRightDialog(task) {
+  isRightModalOpen.value = true;
   modalTaskInput.value = task.title;
   modalDescriptionInput.value = task.description;
-  updatedDrawerTaskInput.value = task;
-}
-function updateRightDrawer(newValue) {
-  rightModalOpen.value = newValue;
+  selectedTask.value = task;
 }
 
-function updateRightDrawerInput(newTitle, newDescription) {
-  updatedDrawerTaskInput.value.title = newTitle;
-  updatedDrawerTaskInput.value.description = newDescription;
-  localStorage.setItem('tasks', JSON.stringify(tasks.value));
+function onUpdateSelectedTaskFields(newTitle, newDescription) {
+  selectedTask.value.title = newTitle;
+  selectedTask.value.description = newDescription;
 }
-function updateTasks(el) {
-  tasks.value = tasks.value.filter((e) => e !== el);
-  if (el.done === false) {
-    tasks.value.push(el);
+function updateTasks() {
+  tasks.value = tasks.value.filter((e) => e.done === false);
+  completeTasks.value = completeTasks.value.filter((e) => e.done === true);
+}
+
+function onDeleteTask(task) {
+  if (task.done === false) {
+    tasks.value = tasks.value.filter((e) => e.id !== task.id);
+  } else {
+    completeTasks.value = completeTasks.value.filter((e) => e.id !== task.id);
   }
-  localStorage.setItem('tasks', JSON.stringify(tasks.value));
 }
-
-function deleteTask(task) {
-  tasks.value = tasks.value.filter((e) => e !== task);
-  tasks.value = tasks.value.filter((e) => e !== updatedDrawerTaskInput.value);
-  localStorage.setItem('tasks', JSON.stringify(tasks.value));
-  completedTasks.value = completedTasks.value.filter(
-    (e) => e !== updatedDrawerTaskInput.value
-  );
-
-  localStorage.setItem('completeTasks', JSON.stringify(completedTasks.value));
-}
-function updateCompletedTasks(newValue) {
-  completedTasks.value = completedTasks.value || [];
-
-  completedTasks.value.push(newValue);
-
-  completedTasks.value = completedTasks.value.filter((e) => e.done === true);
-
-  updateTasks(newValue);
-  localStorage.setItem('completeTasks', JSON.stringify(completedTasks.value));
+function onChangeTaskState(currentTask) {
+  if (currentTask.done === true) {
+    completeTasks.value.push(currentTask);
+    updateTasks();
+  } else {
+    tasks.value.push(currentTask);
+    updateTasks();
+  }
 }
 </script>
 <template>
   <q-layout
-    @keyup.esc="rightModalOpen = false"
+    @keyup.esc="isRightModalOpen = false"
     class="bg-grey-2"
     view="LHr lpR lFr"
   >
     <Header />
     <LeftModalWindow />
     <TaskInfo
-      :rightModalOpen="rightModalOpen"
+      v-model:isRightModalOpen="isRightModalOpen"
       :tasks="tasks"
       :modalTaskInput="modalTaskInput"
       :modalDescriptionInput="modalDescriptionInput"
-      :updatedDrawerTaskInput="updatedDrawerTaskInput"
-      @update:right-modal-open="updateRightDrawer"
-      @update:modal-task-input="updateRightDrawerInput"
-      @tasks-change="deleteTask"
-      @change-task-state="updateCompletedTasks"
+      :selectedTask="selectedTask"
+      @update:selected-task-fields="onUpdateSelectedTaskFields"
+      @delete-task="onDeleteTask"
+      @change-task-state="onChangeTaskState"
     />
     <q-page-container class="column">
       <TodoList
         :tasks="tasks"
-        :complete-tasks="completedTasks"
-        @open-right-dialog="openRightDrawer"
-        @complete-task="updateCompletedTasks"
-        @delete-task="deleteTask"
+        :complete-tasks="completeTasks"
+        @open-right-dialog="onOpenRightDialog"
+        @change-task-state="onChangeTaskState"
+        @delete-task="onDeleteTask"
       />
     </q-page-container>
-    <AddTask @create-task="addTask" />
+    <AddTask @create-task="onCreateTask" />
   </q-layout>
 </template>
 

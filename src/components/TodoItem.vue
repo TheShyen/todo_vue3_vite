@@ -2,21 +2,26 @@
 import { ref } from 'vue';
 
 const props = defineProps(['task']);
-const emit = defineEmits(['complete-task', 'open-right-dialog', 'delete-task']);
+const emit = defineEmits([
+  'change-task-state',
+  'open-right-dialog',
+  'delete-task'
+]);
 const task = ref(props.task);
 const showContextMenu = ref(false);
-function completeTask() {
+
+function changeTaskState() {
   task.value.done = !task.value.done;
-  emit('complete-task', task);
+  emit('change-task-state', task);
 }
 function deleteTask() {
   emit('delete-task', task);
 }
 </script>
 <template>
-  <q-item :key="task.id" v-ripple :class="{ 'done bg-blue-1': task.done }">
+  <q-item v-ripple :class="{ 'done bg-blue-1': task.done }">
     <q-item-section avatar>
-      <q-btn color="primary" dense flat round @click="completeTask">
+      <q-btn color="primary" dense flat round @click="changeTaskState">
         <q-checkbox
           v-model="task.done"
           class="no-pointer-events"
@@ -36,15 +41,15 @@ function deleteTask() {
               >Удалить</q-item-section
             >
           </q-item>
-          <q-item v-show="!task.done" clickable class="flex-center">
+          <q-item v-if="!task.done" clickable class="flex-center">
             <q-icon name="done" color="green" />
-            <q-item-section @click="completeTask" class="q-ml-xs"
+            <q-item-section @click="changeTaskState" class="q-ml-xs"
               >Пометить как завершенное</q-item-section
             ></q-item
           >
-          <q-item v-show="task.done" clickable class="flex-center">
+          <q-item v-if="task.done" clickable class="flex-center">
             <q-icon name="done" color="green" />
-            <q-item-section @click="completeTask" class="q-ml-xs"
+            <q-item-section @click="changeTaskState" class="q-ml-xs"
               >Пометить как незавершенное</q-item-section
             ></q-item
           >

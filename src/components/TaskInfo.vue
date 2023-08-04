@@ -2,31 +2,31 @@
 import { ref, toRef, watchEffect } from 'vue';
 import { useQuasar } from 'quasar';
 const props = defineProps([
-  'rightModalOpen',
-  'updatedDrawerTaskInput',
+  'isRightModalOpen',
+  'selectedTask',
   'modalDescriptionInput',
   'modalTaskInput'
 ]);
 const emit = defineEmits([
-  'update:rightModalOpen',
-  'update:modalTaskInput',
-  'tasksChange',
+  'update:isRightModalOpen',
+  'update:selectedTaskFields',
+  'deleteTask',
   'changeTaskState'
 ]);
 const $q = useQuasar();
-const isModalVisible = toRef(props, 'rightModalOpen');
+
 const titleInput = ref(props.modalTaskInput);
-const currentTask = toRef(props, 'updatedDrawerTaskInput');
+const currentTask = toRef(props, 'selectedTask');
 const descriptionInput = ref(props.modalDescriptionInput);
 watchEffect(() => {
   titleInput.value = props.modalTaskInput;
   descriptionInput.value = props.modalDescriptionInput;
 });
 function closeRightDrawer() {
-  emit('update:rightModalOpen', false);
+  emit('update:isRightModalOpen', false);
 }
-function updateDrawerTaskInput(event) {
-  emit('update:modalTaskInput', titleInput.value, descriptionInput.value);
+function onUpdateModalInputs(event) {
+  emit('update:selectedTaskFields', titleInput.value, descriptionInput.value);
   event.target.blur();
 }
 function changeTaskState() {
@@ -47,7 +47,7 @@ function showDialogModal() {
       push: true
     }
   }).onOk(() => {
-    emit('tasksChange');
+    emit('deleteTask', currentTask.value);
 
     closeRightDrawer();
   });
@@ -55,7 +55,7 @@ function showDialogModal() {
 </script>
 <template>
   <q-drawer
-    v-model="isModalVisible"
+    v-model="props.isRightModalOpen"
     :width="400"
     bordered
     class="column"
@@ -73,7 +73,7 @@ function showDialogModal() {
       v-model="titleInput"
       :class="{ 'done bg-blue-1': currentTask.done }"
       class="q-ma-md q-mt-md text-h5"
-      @keyup.enter="updateDrawerTaskInput($event)"
+      @keyup.enter="onUpdateModalInputs($event)"
       outlined
     >
       <template v-slot:prepend>
@@ -92,7 +92,7 @@ function showDialogModal() {
       type="textarea"
       placeholder="Добавить описание"
       outlined
-      @keyup.enter="updateDrawerTaskInput($event)"
+      @keyup.enter="onUpdateModalInputs($event)"
     >
     </q-input>
 

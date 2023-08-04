@@ -1,15 +1,18 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const emit = defineEmits(['createTask']);
 
 const taskInput = ref('');
 const input = ref(null);
+const showAt = ref(false);
 onMounted(() => {
   input.value.focus();
 });
+watch(taskInput, () => (showAt.value = false));
 function addTask() {
-  if (!taskInput.value.length) {
+  if (!taskInput.value.trim().length) {
+    showAt.value = true;
     return;
   }
   const newTask = {
@@ -18,6 +21,7 @@ function addTask() {
     done: false,
     id: Date.now()
   };
+
   emit('createTask', newTask);
   taskInput.value = '';
 }
@@ -25,6 +29,9 @@ function addTask() {
 
 <template>
   <q-footer class="bg-grey-2">
+    <div class="q-ml-md text-red text-h6" v-if="showAt">
+      Напишите что-нибудь
+    </div>
     <q-input
       ref="input"
       v-model="taskInput"

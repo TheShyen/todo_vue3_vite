@@ -15,6 +15,7 @@ const emit = defineEmits([
 ]);
 const $q = useQuasar();
 
+const hasInputAlert = ref(false);
 const titleInput = ref(props.modalTaskInput);
 const currentTask = toRef(props, 'selectedTask');
 const descriptionInput = ref(props.modalDescriptionInput);
@@ -26,6 +27,10 @@ function closeRightDrawer() {
   emit('update:isRightModalOpen', false);
 }
 function onUpdateModalInputs(event) {
+  if (!event.target.value.trim()) {
+    hasInputAlert.value = true;
+    return;
+  }
   emit('update:selectedTaskFields', titleInput.value, descriptionInput.value);
   event.target.blur();
 }
@@ -69,9 +74,13 @@ function showDialogModal() {
       square
       @click="closeRightDrawer"
     />
+    <div class="q-ml-md text-red text-h6" v-if="hasInputAlert">
+      Напишите что-нибудь
+    </div>
     <q-input
       v-model="titleInput"
-      :class="{ 'done bg-blue-1': currentTask.done }"
+      @update:model-value="hasInputAlert = false"
+      :class="{ 'done bg-blue-1': currentTask?.done }"
       class="q-ma-md q-mt-md text-h5"
       @keyup.enter="onUpdateModalInputs($event)"
       outlined
@@ -79,7 +88,7 @@ function showDialogModal() {
       <template v-slot:prepend>
         <q-btn color="primary" dense flat round @click.stop="changeTaskState">
           <q-checkbox
-            v-model="currentTask.done"
+            :model-value="currentTask?.done"
             class="no-pointer-events"
             color="teal"
           />

@@ -2,7 +2,7 @@
 import TodoItem from './TodoItem.vue';
 import { ref } from 'vue';
 
-defineProps(['tasks', 'completeTasks']);
+defineProps(['tasks', 'completedTasks']);
 const emit = defineEmits([
   'change-task-state',
   'open-right-dialog',
@@ -18,7 +18,7 @@ function myTweak(offset) {
 <template>
   <q-page :style-fn="myTweak" class="page">
     <div
-      v-if="!tasks?.length && !completeTasks?.length"
+      v-if="!tasks?.length && !completedTasks?.length"
       class="plug text-h4 text-blue-grey q-mt-xl"
     >
       Добавьте новую задачу!
@@ -34,7 +34,7 @@ function myTweak(offset) {
       />
     </q-list>
     <q-btn-dropdown
-      v-if="completeTasks?.length"
+      v-if="completedTasks?.length"
       class="q-ml-md q-mt-md"
       color="primary"
       no-caps
@@ -42,7 +42,7 @@ function myTweak(offset) {
       label="Завершенные"
     >
     </q-btn-dropdown>
-    <template v-if="completeTasks?.length">
+    <template v-if="completedTasks?.length">
       <q-list
         v-if="showCompleteTasks"
         bordered
@@ -50,7 +50,7 @@ function myTweak(offset) {
         separator
       >
         <TodoItem
-          v-for="task in completeTasks"
+          v-for="task in completedTasks"
           :key="task.id"
           :task="task"
           @open-right-dialog="emit('open-right-dialog', task)"

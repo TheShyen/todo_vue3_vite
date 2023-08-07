@@ -1,18 +1,17 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 
 const emit = defineEmits(['createTask']);
 
 const taskInput = ref('');
 const input = ref(null);
-const showAt = ref(false);
+const hasInputAlert = ref(false);
 onMounted(() => {
   input.value.focus();
 });
-watch(taskInput, () => (showAt.value = false));
 function addTask() {
   if (!taskInput.value.trim().length) {
-    showAt.value = true;
+    hasInputAlert.value = true;
     return;
   }
   const newTask = {
@@ -29,11 +28,12 @@ function addTask() {
 
 <template>
   <q-footer class="bg-grey-2">
-    <div class="q-ml-md text-red text-h6" v-if="showAt">
+    <div class="q-ml-md text-red text-h6" v-if="hasInputAlert">
       Напишите что-нибудь
     </div>
     <q-input
       ref="input"
+      @update:model-value="hasInputAlert = false"
       v-model="taskInput"
       bg-color="white"
       class="text-h6 q-ma-md"

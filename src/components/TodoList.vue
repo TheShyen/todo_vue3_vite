@@ -26,7 +26,7 @@ function myTweak(offset) {
     <q-list v-if="tasks?.length" bordered class="bg-white q-ma-md" separator>
       <TodoItem
         v-for="task in tasks"
-        :key="task.id"
+        :key="task?.id"
         :task="task"
         @open-right-dialog="emit('open-right-dialog', task)"
         @change-task-state="emit('change-task-state', task)"

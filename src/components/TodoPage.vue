@@ -6,13 +6,12 @@ import TaskInfo from './TaskInfo.vue';
 import Header from './Header.vue';
 
 const isRightModalOpen = ref(false);
-const modalTaskInput = ref('');
-const modalDescriptionInput = ref('');
 
 const selectedTask = ref(null);
 
 const tasks = ref([]);
 const completedTask = ref([]);
+
 watch(tasks, () => {
   localStorage.setItem('tasks', JSON.stringify(tasks.value));
 });
@@ -31,15 +30,9 @@ function onCreateTask(newTask) {
 
 function onOpenRightDialog(task) {
   isRightModalOpen.value = true;
-  modalTaskInput.value = task.title;
-  modalDescriptionInput.value = task.description;
   selectedTask.value = task;
 }
 
-function onUpdateSelectedTaskFields(newTitle, newDescription) {
-  selectedTask.value.title = newTitle;
-  selectedTask.value.description = newDescription;
-}
 function updateTasks() {
   tasks.value = tasks.value.filter((e) => e.done === false);
   completedTask.value = completedTask.value.filter((e) => e.done === true);
@@ -60,16 +53,25 @@ function onTaskStateChange(currentTask) {
   }
   updateTasks();
 }
+
+function onChangeTaskInTasks(task) {
+  if (!task.done) {
+    tasks.value = tasks.value.map((elem) => {
+      return elem.id === task.id ? task : elem;
+    });
+  } else {
+    completedTask.value = completedTask.value.map((elem) => {
+      return elem.id === task.id ? task : elem;
+    });
+  }
+}
 </script>
 <template>
   <Header />
   <TaskInfo
     v-model:isRightModalOpen="isRightModalOpen"
-    :tasks="tasks"
-    :modalTaskInput="modalTaskInput"
-    :modalDescriptionInput="modalDescriptionInput"
-    :selectedTask="selectedTask"
-    @update:selected-task-fields="onUpdateSelectedTaskFields"
+    v-model:selectedTask="selectedTask"
+    @change-task-in-tasks="onChangeTaskInTasks"
     @delete-task="onDeleteTask"
     @change-task-state="onTaskStateChange"
   />

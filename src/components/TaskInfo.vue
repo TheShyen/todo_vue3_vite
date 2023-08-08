@@ -1,28 +1,26 @@
 <script setup>
-import { ref, toRef, watchEffect } from 'vue';
+import { reactive, ref, toRef, watchEffect } from 'vue';
 import { useQuasar } from 'quasar';
-const props = defineProps([
-  'isRightModalOpen',
-  'selectedTask',
-  'modalDescriptionInput',
-  'modalTaskInput'
-]);
+const props = defineProps(['isRightModalOpen', 'selectedTask']);
 const emit = defineEmits([
   'update:isRightModalOpen',
-  'update:selectedTaskFields',
+  'update:selectedTask',
   'deleteTask',
-  'changeTaskState'
+  'changeTaskState',
+  'changeTaskInTasks'
 ]);
 const $q = useQuasar();
 
 const hasInputAlert = ref(false);
-const titleInput = ref(props.modalTaskInput);
-const currentTask = toRef(props, 'selectedTask');
-const descriptionInput = ref(props.modalDescriptionInput);
+const currentTask = ref(props.selectedTask);
+const titleInput = ref('');
+const descriptionInput = ref('');
 watchEffect(() => {
-  titleInput.value = props.modalTaskInput;
-  descriptionInput.value = props.modalDescriptionInput;
+  currentTask.value = props.selectedTask;
+  titleInput.value = currentTask.value?.title;
+  descriptionInput.value = currentTask.value?.description;
 });
+
 function closeRightDrawer() {
   emit('update:isRightModalOpen', false);
 }
@@ -31,7 +29,11 @@ function onUpdateModalInputs(event) {
     hasInputAlert.value = true;
     return;
   }
-  emit('update:selectedTaskFields', titleInput.value, descriptionInput.value);
+  currentTask.value.title = titleInput.value;
+  currentTask.value.description = descriptionInput.value;
+
+  emit('update:selectedTask', currentTask.value);
+  emit('changeTaskInTasks', currentTask.value);
   event.target.blur();
 }
 function changeTaskState() {

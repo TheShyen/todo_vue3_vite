@@ -16,7 +16,6 @@ const currentTask = ref(props.selectedTask);
 const titleInput = ref('');
 const descriptionInput = ref('');
 watchEffect(() => {
-  currentTask.value = props.selectedTask;
   titleInput.value = currentTask.value?.title;
   descriptionInput.value = currentTask.value?.description;
 });

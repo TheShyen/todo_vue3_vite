@@ -1,9 +1,13 @@
 <script setup>
 import { useQuasar } from 'quasar';
 import { ref } from 'vue';
+import data, { addList } from '../service/service';
+
 const $q = useQuasar();
 const createListInput = ref('');
-const list = ref([]);
+const lists = ref(data);
+console.log(data);
+
 function prompt() {
   $q.dialog({
     title: 'Создание нового списка',
@@ -15,8 +19,16 @@ function prompt() {
     },
     cancel: true,
     persistent: true
-  }).onOk((data) => {
-    list.value.push(data);
+  }).onOk((name) => {
+    const newPage = {
+      id: Date.now().toString(),
+      name: name,
+      tasks: [],
+      completedTasks: []
+    };
+    lists.value.push(newPage);
+    localStorage.setItem('data', JSON.stringify(lists.value));
+    console.log(data);
   });
 }
 </script>
@@ -40,12 +52,14 @@ function prompt() {
       </template>
     </q-input>
     <q-list bordered class="bg-white q-mt-md q-ma-xs" separator>
-      <q-item v-ripple v-for="item in list" :key="item">
-        <q-item-section>
-          <q-item-label class="self-center text-subtitle1">{{
-            item
-          }}</q-item-label>
-        </q-item-section>
+      <q-item v-ripple v-for="item in lists" :key="item.id">
+        <router-link :to="'/main/' + item.id">
+          <q-item-section>
+            <q-item-label class="self-center text-subtitle1">
+              {{ item.name }}
+            </q-item-label>
+          </q-item-section>
+        </router-link>
       </q-item>
     </q-list>
 

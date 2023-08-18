@@ -1,11 +1,13 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import Alert from './Alert.vue';
 
 const emit = defineEmits(['createTask']);
 
 const taskInput = ref('');
 const input = ref(null);
 const hasInputAlert = ref(false);
+
 onMounted(() => {
   input.value.focus();
 });
@@ -20,7 +22,6 @@ function addTask() {
     done: false,
     id: Date.now()
   };
-
   emit('createTask', newTask);
   taskInput.value = '';
 }
@@ -28,9 +29,7 @@ function addTask() {
 
 <template>
   <q-footer class="bg-grey-2">
-    <div class="q-ml-md text-red text-h6" v-if="hasInputAlert">
-      Напишите что-нибудь
-    </div>
+    <Alert v-if="hasInputAlert" />
     <q-input
       ref="input"
       @update:model-value="hasInputAlert = false"

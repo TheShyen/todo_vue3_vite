@@ -1,57 +1,96 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import {
+  computed,
+  onMounted,
+  onUpdated,
+  ref,
+  toRef,
+  watch,
+  watchEffect
+} from 'vue';
 import TodoList from './TodoList.vue';
 import AddTask from './AddTask.vue';
 import TaskInfo from './TaskInfo.vue';
 import Header from './Header.vue';
+import { useRoute } from 'vue-router';
+import data, { addList } from '../service/service';
+const route = useRoute();
 
 const isRightModalOpen = ref(false);
-
 const selectedTask = ref(null);
-
 const tasks = ref([]);
 const completedTask = ref([]);
 
-watch(tasks, () => {
-  localStorage.setItem('tasks', JSON.stringify(tasks.value));
+const pageId = computed(() => route.params.pageId);
+const tasksFromData = computed(
+  () => data?.find((item) => item.id === pageId.value)?.tasks
+);
+const calculateIndex = (array, task) => {
+  return array.value.findIndex((item) => item.id === task.id);
+};
+onMounted(() => {
+  const arr = [...(JSON.parse(localStorage.getItem('data')) || [])];
+  addList(arr);
+  console.log(data);
+  const a = arr.find((item) => item.id === pageId.value);
+  tasks.value.push(...(a?.tasks || []));
+  console.log('mount');
+  completedTask.value.push(
+    ...(JSON.parse(localStorage.getItem('completeTasks')) || [])
+  );
 });
-watch(completedTask, () => {
+
+watch(tasks.value, () => {
+  console.log(data);
+  localStorage.setItem('data', JSON.stringify(data));
+  console.log('watch');
+});
+watch(completedTask.value, () => {
   localStorage.setItem('completeTasks', JSON.stringify(completedTask.value));
 });
-
-onMounted(() => {
-  tasks.value = JSON.parse(localStorage.getItem('tasks')) || [];
-  completedTask.value = JSON.parse(localStorage.getItem('completeTasks')) || [];
-});
+watch(
+  () => pageId.value,
+  () => {
+    const arr = [...(JSON.parse(localStorage.getItem('data')) || [])];
+    const a = arr.find((item) => item.id === pageId.value);
+    tasks.value.splice(0, tasks.value.length);
+    tasks.value.push(...a.tasks);
+  }
+);
 
 function onCreateTask(newTask) {
-  tasks.value = [...tasks.value, newTask];
+  tasksFromData.value.push(newTask);
+  tasks.value.push(newTask);
 }
-
 function onOpenRightDialog(task) {
   isRightModalOpen.value = true;
   selectedTask.value = task;
 }
 
-function updateTasks() {
-  tasks.value = tasks.value.filter((e) => e.done === false);
-  completedTask.value = completedTask.value.filter((e) => e.done === true);
+function handleTasksChange(task) {
+  tasks.value.splice(calculateIndex(tasks, task), 1);
+  tasksFromData.value.splice(calculateIndex(tasksFromData, task), 1);
+}
+function handleCompletedTasksChange(task) {
+  const index = completedTask.value.findIndex((item) => item.id === task.id);
+  completedTask.value.splice(index, 1);
 }
 
 function onDeleteTask(task) {
   if (task.done === false) {
-    tasks.value = tasks.value.filter((e) => e.id !== task.id);
+    handleTasksChange(task);
   } else {
-    completedTask.value = completedTask.value.filter((e) => e.id !== task.id);
+    handleCompletedTasksChange(task);
   }
 }
-function onTaskStateChange(currentTask) {
+function switchingState(currentTask) {
   if (currentTask.done === true) {
     completedTask.value.push(currentTask);
+    handleTasksChange(currentTask);
   } else {
     tasks.value.push(currentTask);
+    handleCompletedTasksChange(currentTask);
   }
-  updateTasks();
 }
 
 function onChangeTaskInTasks(task) {
@@ -73,17 +112,18 @@ function onChangeTaskInTasks(task) {
     v-model:selectedTask="selectedTask"
     @change-task-in-tasks="onChangeTaskInTasks"
     @delete-task="onDeleteTask"
-    @change-task-state="onTaskStateChange"
+    @switching-state="switchingState"
   />
   <q-page-container class="column">
     <TodoList
       :tasks="tasks"
       :completed-tasks="completedTask"
       @open-right-dialog="onOpenRightDialog"
-      @change-task-state="onTaskStateChange"
+      @switching-state="switchingState"
       @delete-task="onDeleteTask"
     />
   </q-page-container>
+
   <AddTask @create-task="onCreateTask" />
 </template>
 

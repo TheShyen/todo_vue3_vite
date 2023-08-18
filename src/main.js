@@ -7,8 +7,28 @@ import '@quasar/extras/material-icons/material-icons.css';
 import 'quasar/src/css/index.sass';
 
 import App from './App.vue';
-import router from '../router';
 
+import { createRouter, createWebHistory } from 'vue-router';
+
+import TodoPage from './components/TodoPage.vue';
+import Test from './components/Test.vue';
+
+const routes = [
+  {
+    path: '/main/:pageId',
+    component: TodoPage
+  },
+  {
+    path: '/:pageId',
+    component: TodoPage,
+    props: (router) => ({ pageId: router.params.pageId })
+  }
+];
+
+const router = createRouter({
+  history: createWebHistory('/todo_vue3_vite/'),
+  routes
+});
 const myApp = createApp(App);
 
 myApp.use(Quasar, {

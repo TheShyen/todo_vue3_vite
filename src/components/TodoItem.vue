@@ -3,16 +3,17 @@ import { ref } from 'vue';
 
 const props = defineProps(['task']);
 const emit = defineEmits([
-  'change-task-state',
+  'switching-state',
   'open-right-dialog',
   'delete-task'
 ]);
+
 const task = ref(props.task);
 const showContextMenu = ref(false);
 
 function changeTaskState() {
   task.value.done = !task.value.done;
-  emit('change-task-state', task);
+  emit('switching-state', task.value);
 }
 function deleteTask() {
   emit('delete-task', task);
@@ -61,8 +62,10 @@ function deleteTask() {
       class="q-mt-xs text-grey-7"
       style="text-decoration: none"
       v-if="task.description"
-      ><q-icon name="note" /> Заметка</q-item-label
     >
+      <q-icon name="note" />
+      Заметка
+    </q-item-label>
   </q-item>
 </template>
 

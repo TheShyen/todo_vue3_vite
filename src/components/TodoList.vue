@@ -4,10 +4,11 @@ import { ref } from 'vue';
 
 defineProps(['tasks', 'completedTasks']);
 const emit = defineEmits([
-  'change-task-state',
+  'switching-state',
   'open-right-dialog',
   'delete-task'
 ]);
+
 const showCompleteTasks = ref(true);
 
 function myTweak(offset) {
@@ -18,23 +19,23 @@ function myTweak(offset) {
 <template>
   <q-page :style-fn="myTweak" class="page">
     <div
-      v-if="!tasks?.length && !completedTasks?.length"
+      v-if="!tasks.length && !completedTasks.length"
       class="plug text-h4 text-blue-grey q-mt-xl"
     >
       Добавьте новую задачу!
     </div>
-    <q-list v-if="tasks?.length" bordered class="bg-white q-ma-md" separator>
+    <q-list v-if="tasks.length" bordered class="bg-white q-ma-md" separator>
       <TodoItem
         v-for="task in tasks"
-        :key="task?.id"
+        :key="task.id"
         :task="task"
         @open-right-dialog="emit('open-right-dialog', task)"
-        @change-task-state="emit('change-task-state', task)"
+        @switching-state="emit('switching-state', task)"
         @delete-task="emit('delete-task', task)"
       />
     </q-list>
     <q-btn-dropdown
-      v-if="completedTasks?.length"
+      v-if="completedTasks.length"
       class="q-ml-md q-mt-md"
       color="primary"
       no-caps
@@ -42,7 +43,7 @@ function myTweak(offset) {
       label="Завершенные"
     >
     </q-btn-dropdown>
-    <template v-if="completedTasks?.length">
+    <template v-if="completedTasks.length">
       <q-list
         v-if="showCompleteTasks"
         bordered
@@ -54,7 +55,8 @@ function myTweak(offset) {
           :key="task.id"
           :task="task"
           @open-right-dialog="emit('open-right-dialog', task)"
-          @change-task-state="emit('change-task-state', task)"
+          @switching-state="emit('switching-state', task)"
+          @delete-task="emit('delete-task', task)"
         />
       </q-list>
     </template>

@@ -2,6 +2,8 @@
 import { computed } from 'vue';
 import { date } from 'quasar';
 
+defineProps(['nameList']);
+
 const formatData = computed(() => {
   const timeStamp = Date.now();
   return date.formatDate(timeStamp, 'dddd D MMMM');
@@ -11,7 +13,7 @@ const formatData = computed(() => {
 <template>
   <q-header bordered class="header bg-primary text-white" elevated>
     <div class="q-px-lg q-pt-xl q-mb-md q-mt-xl">
-      <div class="text-h3">TODO</div>
+      <div class="text-h3">{{ nameList }}</div>
       <div class="text-subtitle1">{{ formatData }}</div>
     </div>
     <q-img class="header-image absolute-top" src="../statics/mountains.jpg" />

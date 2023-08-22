@@ -2,22 +2,16 @@ import { reactive } from 'vue';
 
 const data = reactive([
   {
-    id: '1',
+    id: 'main',
     name: 'Мой день',
-    tasks: [],
-    completedTasks: []
-  },
-  {
-    id: '2',
-    name: 'SSS',
     tasks: [],
     completedTasks: []
   }
 ]);
 
 export function addList(item) {
-  data.length = 0; // Очищаем текущий массив
-  data.push(...item); // Добавляем новые элементы
+  data.length = 0;
+  data.push(...item);
   console.log(data);
 }
 

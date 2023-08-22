@@ -1,8 +1,6 @@
 <script setup>
 import LeftModalWindow from './components/LeftModalWindow.vue';
 import { ref } from 'vue';
-
-const allTasks = ref({ main: { tasks: [], completeTasks: [] } });
 </script>
 
 <template>

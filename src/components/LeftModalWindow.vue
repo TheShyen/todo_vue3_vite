@@ -1,12 +1,23 @@
 <script setup>
 import { useQuasar } from 'quasar';
-import { ref } from 'vue';
-import data, { addList } from '../service/service';
+import { computed, ref, watch } from 'vue';
+import data from '../service/service';
+import { useRouter } from 'vue-router';
 
 const $q = useQuasar();
+const router = useRouter();
+
 const createListInput = ref('');
 const lists = ref(data);
-console.log(data);
+const searchInput = ref('');
+
+watch(searchInput, () => {
+  if (searchInput.value) {
+    filteredTasks();
+  } else {
+    router.push('/main');
+  }
+});
 
 function prompt() {
   $q.dialog({
@@ -28,8 +39,33 @@ function prompt() {
     };
     lists.value.push(newPage);
     localStorage.setItem('data', JSON.stringify(lists.value));
-    console.log(data);
   });
+}
+function handleDeleteList(elem) {
+  lists.value.splice(
+    lists.value.findIndex((item) => item.id === elem.id),
+    1
+  );
+  localStorage.setItem('data', JSON.stringify(lists.value));
+  router.push('/main');
+}
+function filteredTasks() {
+  const tasksMatchingSearch = [];
+  lists.value.forEach((todoList) => {
+    const filteredTasksInList = todoList.tasks.filter((task) =>
+      task.title.toLowerCase().includes(searchInput.value.toLowerCase())
+    );
+    const filteredCompletedTasksInList = todoList.completedTasks.filter(
+      (task) =>
+        task.title.toLowerCase().includes(searchInput.value.toLowerCase())
+    );
+    tasksMatchingSearch.push(
+      ...filteredTasksInList,
+      ...filteredCompletedTasksInList
+    );
+  });
+  router.push('/search');
+  localStorage.setItem('search', JSON.stringify(tasksMatchingSearch));
 }
 </script>
 
@@ -43,23 +79,38 @@ function prompt() {
     :breakpoint="500"
   >
     <q-input
+      v-model="searchInput"
       class="text-h6 q-ma-xs"
       label="Search"
-      standout="bg-teal-3 text-white"
+      standout="bg-teal-5 text-white"
     >
       <template v-slot:append>
         <q-icon name="search" />
       </template>
     </q-input>
-    <q-list bordered class="bg-white q-mt-md q-ma-xs" separator>
-      <q-item v-ripple v-for="item in lists" :key="item.id">
-        <router-link :to="'/main/' + item.id">
-          <q-item-section>
-            <q-item-label class="self-center text-subtitle1">
-              {{ item.name }}
-            </q-item-label>
-          </q-item-section>
-        </router-link>
+    <q-list class="bg-grey-3 q-mt-md q-ma-xs">
+      <q-item
+        clickable
+        v-ripple
+        v-for="item in lists"
+        :key="item.id"
+        class="self-start"
+        @click="router.push('/' + item.id)"
+      >
+        <q-menu context-menu>
+          <q-list style="min-width: 200px">
+            <q-item clickable v-close-popup @click="handleDeleteList(item)">
+              <q-icon name="delete" color="red" class="self-center q-mr-xs" />
+              <q-item-section>Удалить</q-item-section>
+            </q-item>
+          </q-list>
+        </q-menu>
+
+        <q-item-section>
+          <q-item-label class="text-subtitle1">
+            <q-icon name="list" color="primary" size="23px" /> {{ item.name }}
+          </q-item-label>
+        </q-item-section>
       </q-item>
     </q-list>
 

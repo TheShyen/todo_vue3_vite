@@ -11,17 +11,16 @@ import App from './App.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
 import TodoPage from './components/TodoPage.vue';
-import Test from './components/Test.vue';
+import SearchTodoPage from './components/SearchTodoPage.vue';
 
 const routes = [
   {
-    path: '/main/:pageId',
+    path: '/:pageId',
     component: TodoPage
   },
   {
-    path: '/:pageId',
-    component: TodoPage,
-    props: (router) => ({ pageId: router.params.pageId })
+    path: '/search',
+    component: SearchTodoPage
   }
 ];
 

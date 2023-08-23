@@ -12,6 +12,7 @@ const isRightModalOpen = ref(false);
 const selectedTask = ref(null);
 const tasks = ref([]);
 const completedTasks = ref([]);
+const database = ref([]);
 
 const pageId = computed(() => route.params.pageId);
 const tasksFromData = computed(
@@ -40,6 +41,7 @@ function getItemFromData() {
 
 watch(tasks.value, () => {
   localStorage.setItem('data', JSON.stringify(data));
+  console.log('watch');
 });
 watch(completedTasks.value, () => {
   localStorage.setItem('data', JSON.stringify(data));
@@ -97,16 +99,23 @@ function switchingState(currentTask) {
   }
 }
 
-function onChangeTaskInTasks(task) {
-  if (!task.done) {
-    tasks.value = tasks.value.map((elem) => {
-      return elem.id === task.id ? task : elem;
+function onChangeTaskInTasks(currentTask) {
+  if (!currentTask.done) {
+    database.value = data.map((list) => {
+      const updatedTasks = list.tasks.map((e) =>
+        e.id === currentTask.id ? currentTask : e
+      );
+      return { ...list, tasks: updatedTasks };
     });
   } else {
-    completedTasks.value = completedTasks.value.map((elem) => {
-      return elem.id === task.id ? task : elem;
+    database.value = data.map((list) => {
+      const updatedTasks = list.completedTasks.map((e) =>
+        e.id === currentTask.id ? currentTask : e
+      );
+      return { ...list, completedTasks: updatedTasks };
     });
   }
+  localStorage.setItem('data', JSON.stringify(database.value));
 }
 </script>
 <template>

@@ -1,6 +1,5 @@
 <script setup>
 import LeftModalWindow from './components/LeftModalWindow.vue';
-import { ref } from 'vue';
 </script>
 
 <template>

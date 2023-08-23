@@ -1,6 +1,6 @@
 <script setup>
 import { useQuasar } from 'quasar';
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import data from '../service/service';
 import { useRouter } from 'vue-router';
 
@@ -11,13 +11,17 @@ const createListInput = ref('');
 const lists = ref(data);
 const searchInput = ref('');
 
-watch(searchInput, () => {
-  if (searchInput.value) {
-    filteredTasks();
-  } else {
-    router.push('/main');
+watch(
+  () => searchInput.value,
+  () => {
+    if (searchInput.value) {
+      filteredTasks();
+      router.push('/search/' + searchInput.value);
+    } else {
+      router.push('/main');
+    }
   }
-});
+);
 
 function prompt() {
   $q.dialog({
@@ -47,7 +51,7 @@ function handleDeleteList(elem) {
     1
   );
   localStorage.setItem('data', JSON.stringify(lists.value));
-  router.push('/main');
+  router.go(-1);
 }
 function filteredTasks() {
   const tasksMatchingSearch = [];
@@ -64,7 +68,7 @@ function filteredTasks() {
       ...filteredCompletedTasksInList
     );
   });
-  router.push('/search');
+
   localStorage.setItem('search', JSON.stringify(tasksMatchingSearch));
 }
 </script>

@@ -19,7 +19,7 @@ const routes = [
     component: TodoPage
   },
   {
-    path: '/search',
+    path: '/search/:input',
     component: SearchTodoPage
   }
 ];

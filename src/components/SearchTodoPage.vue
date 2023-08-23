@@ -1,44 +1,43 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import {
+  computed,
+  onMounted,
+  onUpdated,
+  reactive,
+  ref,
+  toRef,
+  watch,
+  watchEffect
+} from 'vue';
 import TodoList from './TodoList.vue';
 import TaskInfo from './TaskInfo.vue';
 import Header from './Header.vue';
-import { useRoute } from 'vue-router';
 import data from '../service/service';
-const route = useRoute();
+import { useRoute } from 'vue-router';
 
 const isRightModalOpen = ref(false);
 const selectedTask = ref(null);
 const tasks = ref([]);
 const completedTasks = ref([]);
 const newData = ref([]);
-
-const pageId = computed(() => route.params.pageId);
-const tasksFromData = computed(
-  () => data?.find((item) => item.id === pageId.value)?.tasks
-);
+const route = useRoute();
+const input = computed(() => route.params.input);
 
 onMounted(() => {
-  tasks.value.push(...getItemFromData());
+  tasks.value = getItemFromData();
+  console.log('mount');
 });
 
 function getItemFromData() {
   return [...(JSON.parse(localStorage.getItem('search')) || [])];
 }
-
-watch(tasks.value, () => {
-  localStorage.setItem('search', JSON.stringify(tasks.value));
+watch(input, () => {
+  tasks.value = getItemFromData();
 });
 
-watch(
-  () => pageId.value,
-  () => {
-    tasks.value.splice(0, tasks.value.length);
-    tasks.value.push(...getItemFromData().tasks);
-    completedTasks.value.splice(0, completedTasks.value.length);
-    completedTasks.value.push(...getItemFromData().completedTasks);
-  }
-);
+watch(tasks, () => {
+  localStorage.setItem('search', JSON.stringify(tasks.value));
+});
 
 function calculateIndex(array, task) {
   return array.value.findIndex((item) => item.id === task.id);
@@ -49,49 +48,83 @@ function onOpenRightDialog(task) {
   selectedTask.value = task;
 }
 
-function handleTasksChange(task) {
-  tasks.value.splice(calculateIndex(tasks, task), 1);
-}
-function handleCompletedTasksChange(task) {
-  completedTasks.value.splice(calculateIndex(completedTasks, task), 1);
-}
-
-function onDeleteTask(task) {
-  if (task.done === false) {
-    handleTasksChange(task);
-  } else {
-    handleCompletedTasksChange(task);
-  }
-}
-function switchingState(currentTask) {
-  console.log(currentTask);
-  if (currentTask.done === true) {
+function onDeleteTask(currentTask) {
+  tasks.value.splice(calculateIndex(tasks, currentTask), 1);
+  if (currentTask.done === false) {
     newData.value = data.map((list) => {
-      const newTasks = list.tasks.map((elem) => {
-        return elem.id === currentTask.id ? currentTask : elem;
+      const index = list.tasks.findIndex((item) => item.id === currentTask.id);
+      list.tasks.map((e) => {
+        if (e.id === currentTask.id) {
+          list.tasks.splice(index, 1);
+        }
       });
 
-      return { ...list, completedTasks: newTasks };
+      return { ...list };
     });
-
-    localStorage.setItem('data', JSON.stringify(newData.value));
   } else {
-    tasks.value.push(currentTask);
-    tasksFromData.value.push(currentTask);
-    handleCompletedTasksChange(currentTask);
+    newData.value = data.map((list) => {
+      const index = list.completedTasks.findIndex(
+        (item) => item.id === currentTask.id
+      );
+      list.completedTasks.map((e) => {
+        if (e.id === currentTask.id) {
+          list.completedTasks.splice(index, 1);
+        }
+      });
+      return { ...list };
+    });
   }
+  localStorage.setItem('data', JSON.stringify(newData.value));
+}
+function switchingState(currentTask) {
+  currentTask.done = !currentTask.done;
+  if (currentTask.done === true) {
+    newData.value = data.map((list) => {
+      const index = list.tasks.findIndex((item) => item.id === currentTask.id);
+      list.tasks.map((e) => {
+        if (e.id === currentTask.id) {
+          list.tasks.splice(index, 1);
+          list.completedTasks.push(currentTask);
+        }
+      });
+
+      return { ...list };
+    });
+  } else {
+    newData.value = data.map((list) => {
+      const index = list.completedTasks.findIndex(
+        (item) => item.id === currentTask.id
+      );
+      list.completedTasks.map((e) => {
+        if (e.id === currentTask.id) {
+          list.completedTasks.splice(index, 1);
+          list.tasks.push(currentTask);
+        }
+      });
+      return { ...list };
+    });
+  }
+
+  localStorage.setItem('data', JSON.stringify(newData.value));
 }
 
-function onChangeTaskInTasks(task) {
-  if (!task.done) {
-    tasks.value = tasks.value.map((elem) => {
-      return elem.id === task.id ? task : elem;
+function onChangeTaskInTasks(currentTask) {
+  if (!currentTask.done) {
+    newData.value = data.map((list) => {
+      const updatedTasks = list.tasks.map((e) =>
+        e.id === currentTask.id ? currentTask : e
+      );
+      return { ...list, tasks: updatedTasks };
     });
   } else {
-    completedTasks.value = completedTasks.value.map((elem) => {
-      return elem.id === task.id ? task : elem;
+    newData.value = data.map((list) => {
+      const updatedTasks = list.completedTasks.map((e) =>
+        e.id === currentTask.id ? currentTask : e
+      );
+      return { ...list, completedTasks: updatedTasks };
     });
   }
+  localStorage.setItem('data', JSON.stringify(newData.value));
 }
 </script>
 <template>

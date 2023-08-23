@@ -115,7 +115,7 @@ function onChangeTaskInTasks(currentTask) {
       return { ...list, completedTasks: updatedTasks };
     });
   }
-  localStorage.setItem('data', JSON.stringify(database.value));
+  addList(database.value);
 }
 </script>
 <template>

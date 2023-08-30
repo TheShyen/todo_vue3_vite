@@ -1,14 +1,14 @@
 <script setup>
 import { useQuasar } from 'quasar';
 import { ref, watch } from 'vue';
-import data from '../service/service';
 import { useRouter } from 'vue-router';
+import { useTodoListsStore } from '../store/TodoListsStore';
 
 const $q = useQuasar();
 const router = useRouter();
+const store = useTodoListsStore();
 
 const createListInput = ref('');
-const lists = ref(data);
 const searchInput = ref('');
 
 watch(
@@ -29,47 +29,28 @@ function prompt() {
     message: 'Введите имя списка',
     prompt: {
       model: createListInput.value,
-      isValid: (val) => val.length > 2,
+      isValid: (val) => val.length > 2 && val.length < 20,
       type: 'text'
     },
     cancel: true,
     persistent: true
   }).onOk((name) => {
-    const newPage = {
+    const newList = {
       id: Date.now().toString(),
       name: name,
       tasks: [],
       completedTasks: []
     };
-    lists.value.push(newPage);
-    localStorage.setItem('data', JSON.stringify(lists.value));
+    store.addList(newList);
   });
 }
 function handleDeleteList(elem) {
-  lists.value.splice(
-    lists.value.findIndex((item) => item.id === elem.id),
-    1
-  );
-  localStorage.setItem('data', JSON.stringify(lists.value));
-  router.go(-1);
+  store.deleteList(elem);
+  router.replace('/main');
 }
 function filteredTasks() {
-  const tasksMatchingSearch = [];
-  lists.value.forEach((todoList) => {
-    const filteredTasksInList = todoList.tasks.filter((task) =>
-      task.title.toLowerCase().includes(searchInput.value.toLowerCase())
-    );
-    const filteredCompletedTasksInList = todoList.completedTasks.filter(
-      (task) =>
-        task.title.toLowerCase().includes(searchInput.value.toLowerCase())
-    );
-    tasksMatchingSearch.push(
-      ...filteredTasksInList,
-      ...filteredCompletedTasksInList
-    );
-  });
-
-  localStorage.setItem('search', JSON.stringify(tasksMatchingSearch));
+  store.getFilteredTasks(searchInput.value);
+  localStorage.setItem('search', JSON.stringify(store.searchTasks));
 }
 </script>
 
@@ -82,11 +63,12 @@ function filteredTasks() {
     side="left"
     :breakpoint="500"
   >
+    <div class="search">Поиск задач</div>
     <q-input
       v-model="searchInput"
       class="text-h6 q-ma-xs"
-      label="Search"
-      standout="bg-teal-5 text-white"
+      label="Введите название задачи..."
+      standout="bg-teal-3 text-white"
     >
       <template v-slot:append>
         <q-icon name="search" />
@@ -96,7 +78,7 @@ function filteredTasks() {
       <q-item
         clickable
         v-ripple
-        v-for="item in lists"
+        v-for="item in store.lists"
         :key="item.id"
         class="self-start"
         @click="router.push('/' + item.id)"
@@ -130,4 +112,12 @@ function filteredTasks() {
   </q-drawer>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.search {
+  display: flex;
+  margin: 10px 0;
+  justify-content: center;
+  font-family: 'Calibri Light';
+  font-size: 25px;
+}
+</style>

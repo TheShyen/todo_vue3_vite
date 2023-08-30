@@ -5,62 +5,39 @@ import AddTask from './AddTask.vue';
 import TaskInfo from './TaskInfo.vue';
 import Header from './Header.vue';
 import { useRoute } from 'vue-router';
-import data, { addList } from '../service/service';
+import { useTodoListsStore } from '../store/TodoListsStore';
+import { router } from '../../router';
 const route = useRoute();
+const store = useTodoListsStore();
 
 const isRightModalOpen = ref(false);
 const selectedTask = ref(null);
 const tasks = ref([]);
 const completedTasks = ref([]);
-const database = ref([]);
 
 const pageId = computed(() => route.params.pageId);
-const tasksFromData = computed(
-  () => data?.find((item) => item.id === pageId.value)?.tasks
-);
-const nameList = computed(
-  () => data?.find((item) => item.id === pageId.value)?.name
-);
-const completedTasksFromData = computed(
-  () => data?.find((item) => item.id === pageId.value)?.completedTasks
-);
+const currentList = computed(() => store.getList(pageId));
 
 onMounted(() => {
-  if (localStorage.getItem('data') === null) {
-    localStorage.setItem('data', JSON.stringify(data));
-  }
-  tasks.value.push(...(getItemFromData()?.tasks || []));
-  completedTasks.value.push(...(getItemFromData()?.completedTasks || []));
+  tasks.value.push(...(currentList.value?.tasks || []));
+  completedTasks.value.push(...(currentList.value?.completedTasks || []));
 });
 
-function getItemFromData() {
-  const arr = [...(JSON.parse(localStorage.getItem('data')) || [])];
-  addList(arr);
-  return arr.find((item) => item.id === pageId.value);
-}
-
-watch(tasks.value, () => {
-  localStorage.setItem('data', JSON.stringify(data));
-  console.log('watch');
-});
-watch(completedTasks.value, () => {
-  localStorage.setItem('data', JSON.stringify(data));
-});
 watch(
   () => pageId.value,
   () => {
     tasks.value.splice(0, tasks.value.length);
-    tasks.value.push(...getItemFromData().tasks);
+    tasks.value.push(...currentList.value.tasks);
     completedTasks.value.splice(0, completedTasks.value.length);
-    completedTasks.value.push(...getItemFromData().completedTasks);
+    completedTasks.value.push(...currentList.value.completedTasks);
   }
 );
 
 function calculateIndex(array, task) {
-  return array.value.findIndex((item) => item.id === task.id);
+  return array.value?.findIndex((item) => item.id === task.id);
 }
 function onCreateTask(newTask) {
-  tasksFromData.value.push(newTask);
+  currentList.value.tasks.push(newTask);
   tasks.value.push(newTask);
 }
 function onOpenRightDialog(task) {
@@ -70,12 +47,15 @@ function onOpenRightDialog(task) {
 
 function handleTasksChange(task) {
   tasks.value.splice(calculateIndex(tasks, task), 1);
-  tasksFromData.value.splice(calculateIndex(tasksFromData, task), 1);
+  currentList.value.tasks.splice(
+    calculateIndex(currentList.value.tasks, task),
+    1
+  );
 }
 function handleCompletedTasksChange(task) {
   completedTasks.value.splice(calculateIndex(completedTasks, task), 1);
-  completedTasksFromData.value.splice(
-    calculateIndex(completedTasksFromData, task),
+  currentList.value.completedTasks.splice(
+    calculateIndex(currentList.value.completedTasks, task),
     1
   );
 }
@@ -90,36 +70,21 @@ function onDeleteTask(task) {
 function switchingState(currentTask) {
   if (currentTask.done === true) {
     completedTasks.value.push(currentTask);
-    completedTasksFromData.value.push(currentTask);
+    currentList.value.completedTasks.push(currentTask);
     handleTasksChange(currentTask);
   } else {
     tasks.value.push(currentTask);
-    tasksFromData.value.push(currentTask);
+    currentList.value.tasks.push(currentTask);
     handleCompletedTasksChange(currentTask);
   }
 }
 
 function onChangeTaskInTasks(currentTask) {
-  if (!currentTask.done) {
-    database.value = data.map((list) => {
-      const updatedTasks = list.tasks.map((e) =>
-        e.id === currentTask.id ? currentTask : e
-      );
-      return { ...list, tasks: updatedTasks };
-    });
-  } else {
-    database.value = data.map((list) => {
-      const updatedTasks = list.completedTasks.map((e) =>
-        e.id === currentTask.id ? currentTask : e
-      );
-      return { ...list, completedTasks: updatedTasks };
-    });
-  }
-  addList(database.value);
+  store.changeTaskStateInList(currentTask, pageId);
 }
 </script>
 <template>
-  <Header :nameList="nameList" />
+  <Header :nameList="currentList?.name" />
   <TaskInfo
     v-model:isRightModalOpen="isRightModalOpen"
     v-model:selectedTask="selectedTask"

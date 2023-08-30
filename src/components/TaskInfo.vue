@@ -65,7 +65,7 @@ function showDialogModal() {
     :width="400"
     bordered
     side="right"
-    class="column"
+    class="column no-wrap"
   >
     <q-btn
       class="q-ma-xs self-end"

@@ -1,5 +1,7 @@
 <script setup>
 import LeftModalWindow from './components/LeftModalWindow.vue';
+import { router } from '../router';
+router.replace('/main');
 </script>
 
 <template>
